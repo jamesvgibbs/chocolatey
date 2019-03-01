@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Do not remove this test for UTF-8: if “Ω” doesn’t appear as greek uppercase omega letter enclosed in quotation marks, you should use an editor that supports UTF-8, not this one. -->
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>zoiper</id>
+    <version>1.0.0</version>
+    <!-- <packageSourceUrl>Where is this Chocolatey package located (think GitHub)? packageSourceUrl is highly recommended for the community feed</packageSourceUrl>-->
+    <owners>jamesvgibbs</owners>
+    <authors>zoiper.com</authors>
+    <title>ZoiPer</title>
+    <projectUrl>https://www.zoiper.com/en/voip-softphone/download/zoiper5/for/windows</projectUrl>
+    <iconUrl>https://www.zoiper.com/v3/img/zoiper-logo.png</iconUrl>
+    <licenseUrl>https://www.zoiper.com/en/zoiper-general-terms</licenseUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <!--<projectSourceUrl>Software Source Location - is the software FOSS somewhere? Link to it with this</projectSourceUrl>-->
+    <tags>zoiper phone</tags>
+    <summary>User-friendly interface, HD audio and video, IM and more</summary>
+    <description>Zoiper is compatible with most VoIP service providers and PBXs. Enjoy free calls between Zoiper users or combine our dialers with your favorite provider for the cheapest calls.</description>
+    <dependencies>
+      <dependency id="chocolatey-core.extension" version="1.1.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

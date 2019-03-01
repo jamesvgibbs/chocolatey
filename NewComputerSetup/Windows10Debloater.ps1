@@ -28,9 +28,94 @@ Else {
 
     Start-Transcript -OutputDirectory "$DebloatFolder"
 
+    Write-Output "Add-Type -AssemblyName PresentationCore, PresentationFramework"
     Add-Type -AssemblyName PresentationCore, PresentationFramework
 
-    RunIt
+    #This will debloat Windows 10
+    #Creates a "drive" to access the HKCR (HKEY_CLASSES_ROOT)
+    Write-Output "Creating PSDrive 'HKCR' (HKEY_CLASSES_ROOT). This will be used for the duration of the script as it is necessary for the removal and modification of specific registry keys."
+    New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
+    Start-Sleep 1
+    # Write-Output "Uninstalling bloatware, please wait."
+    # DebloatAll
+    # Write-Output "Bloatware removed."
+    # Start-Sleep 1
+    # Write-Output "Removing specific registry keys."
+    # Remove-Keys
+    # Write-Output "Leftover bloatware registry keys removed."
+    # Start-Sleep 1
+    # Write-Output "Checking to see if any Whitelisted Apps were removed, and if so re-adding them."
+    # Start-Sleep 1
+    # FixWhitelistedApps
+    # Start-Sleep 1
+    # Write-Output "Disabling Cortana from search, disabling feedback to Microsoft, and disabling scheduled tasks that are considered to be telemetry or unnecessary."
+    # Protect-Privacy
+    # Start-Sleep 1
+    # DisableCortana
+    # Write-Output "Cortana disabled and removed from search, feedback to Microsoft has been disabled, and scheduled tasks are disabled."
+    # Start-Sleep 1
+    # Write-Output "Stopping and disabling Diagnostics Tracking Service"
+    # DisableDiagTrack
+    # Write-Output "Diagnostics Tracking Service disabled"
+    # Start-Sleep 1
+    # Write-Output "Disabling WAP push service"
+    # Start-Sleep 1
+    # DisableWAPPush
+    # Write-Output "Re-enabling DMWAppushservice if it was disabled"
+    # CheckDMWService
+    # Start-Sleep 1
+    # Stop-EdgePDF
+    # Write-Output "Edge will no longer take over as the default PDF viewer."
+    # UninstallOneDrive
+    # Write-Output "OneDrive is now removed from the computer."
+    # UnpinStart
+    # Write-Output "Start Apps unpined."
+
+    Write-Output "Unloading the HKCR drive..."
+    Remove-PSDrive HKCR 
+    Start-Sleep 1
+
+    If (Test-Path -Path "$env:ProgramData\Chocolatey" !== True) {
+        Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString("https://chocolatey.org/install.ps1"))
+    }
+
+    # Browsers + Extensions
+    Write-Output "Installing Google Chrome"
+    choco install googlechrome -y
+    Write-Output "Installing Google Chrome Extension AdBlocker Plus"
+    choco install adblockpluschrome -y
+    Write-Output "Installing Google Chrome Extension Grammarly"
+    choco install grammarly-chrome -y
+
+    # Password Manager
+    Write-Output "Installing LastPass"
+    choco install lastpass -y
+    Write-Output "Installing Google Chrome Extension LastPass"
+    choco install lastpass-chrome -y
+    Write-Output "Installing Dashlane"
+    choco install dashlane -y
+    Write-Output "Installing Google Chrome Extension Dashlane"
+    choco install dashlane-chrome --version 1.0.0 -y
+
+    # Utilities + other
+    Write-Output "Installing Slack"
+    choco install slack -y
+    Write-Output "Installing Windows 10 Update Assistance"
+    choco install windows-10-update-assistant -y
+    Write-Output "Installing Speccy"
+    choco install speccy -y
+    Write-Output "Install Zoom"
+    choco install zoom -y --checksum "3EF3C210C475B0F51F58D443B8C87994D7CC1459AD9E64D958946F9B2443CDFC"
+
+    # Phone
+    # https://www.zoiper.com/en/voip-softphone/download/zoiper5/for/windows
+    # Vonage Business
+
+    # Write-Output "Initiating reboot."
+    # Start-Sleep 2
+    # Restart-Computer
+
+    Stop-Transcript
 }
 
 Function DebloatAll {
@@ -414,86 +499,4 @@ Function UnpinStart {
         ForEach-Object { $_.Verbs() } |
         Where-Object {$_.Name -match 'Un.*pin from Start'} |
         ForEach-Object {$_.DoIt()}
-}
-
-Function Chocolatey {
-    set-executionpolicy unrestricted 
-    Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString("https://chocolatey.org/install.ps1"))
-
-    # Browsers + Extensions
-    Write-Output "Installing Google Chrome"
-    choco install googlechrome -y
-    Write-Output "Installing Google Chrome Extension AdBlocker Plus"
-    choco install adblockpluschrome -y
-    Write-Output "Installing Google Chrome Extension Grammarly"
-    choco install grammarly-chrome -y
-
-    # Password Manager
-    Write-Output "Installing LastPass"
-    choco install lastpass -y
-    Write-Output "Installing Google Chrome Extension LastPas"
-    choco install lastpass-chrome -y
-
-    # Utilities + other
-    Write-Output "Installing Slack"
-    choco install slack -y
-    Write-Output "Installing Windows 10 Update Assistance"
-    choco install windows-10-update-assistant -y
-
-    # Phone
-    # https://www.zoiper.com/en/voip-softphone/download/zoiper5/for/windows
-    # Vonage Business
-}
-
-#This will debloat Windows 10
-Function RunIt {
-    #Creates a "drive" to access the HKCR (HKEY_CLASSES_ROOT)
-    Write-Output "Creating PSDrive 'HKCR' (HKEY_CLASSES_ROOT). This will be used for the duration of the script as it is necessary for the removal and modification of specific registry keys."
-    New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
-    Start-Sleep 1
-    # Write-Output "Uninstalling bloatware, please wait."
-    # DebloatAll
-    # Write-Output "Bloatware removed."
-    # Start-Sleep 1
-    # Write-Output "Removing specific registry keys."
-    # Remove-Keys
-    # Write-Output "Leftover bloatware registry keys removed."
-    # Start-Sleep 1
-    # Write-Output "Checking to see if any Whitelisted Apps were removed, and if so re-adding them."
-    # Start-Sleep 1
-    # FixWhitelistedApps
-    # Start-Sleep 1
-    # Write-Output "Disabling Cortana from search, disabling feedback to Microsoft, and disabling scheduled tasks that are considered to be telemetry or unnecessary."
-    # Protect-Privacy
-    # Start-Sleep 1
-    # DisableCortana
-    # Write-Output "Cortana disabled and removed from search, feedback to Microsoft has been disabled, and scheduled tasks are disabled."
-    # Start-Sleep 1
-    # Write-Output "Stopping and disabling Diagnostics Tracking Service"
-    # DisableDiagTrack
-    # Write-Output "Diagnostics Tracking Service disabled"
-    # Start-Sleep 1
-    # Write-Output "Disabling WAP push service"
-    # Start-Sleep 1
-    # DisableWAPPush
-    # Write-Output "Re-enabling DMWAppushservice if it was disabled"
-    # CheckDMWService
-    # Start-Sleep 1
-    # Stop-EdgePDF
-    # Write-Output "Edge will no longer take over as the default PDF viewer."
-    # UninstallOneDrive
-    # Write-Output "OneDrive is now removed from the computer."
-    # UnpinStart
-    # Write-Output "Start Apps unpined."
-
-    Write-Output "Unloading the HKCR drive..."
-    Remove-PSDrive HKCR 
-    Start-Sleep 1
-
-    Chocolatey
-
-    Stop-Transcript
-    # Write-Output "Initiating reboot."
-    # Start-Sleep 2
-    # Restart-Computer
 }
