@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Do not remove this test for UTF-8: if “Ω” doesn’t appear as greek uppercase omega letter enclosed in quotation marks, you should use an editor that supports UTF-8, not this one. -->
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>dashlane-chrome</id>
+    <version>1.0.0</version>
+    <title>Dashlane for Chrome</title>
+    <authors>dashlane.com</authors>
+    <owners>jamesvgibbs</owners>
+    <projectUrl>https://chrome.google.com/webstore/detail/dashlane-password-manager/fdjamakpfbbddfjaooikfcpapjohcfmg</projectUrl>
+    <iconUrl>https://lh3.googleusercontent.com/-Lgwn9wx_WVFHOuo4fjgby839t4JzvHmW2iv97oQXY5f5b_bUDUeeLMcq2DdxS7sne-s60KuUg=w128-h128-e365</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <tags>dashlane chrome extension</tags>
+    <summary>Chrome extension which adds password manager dashlane.</summary>
+    <description>
+    Never Forget Another Password. Store them securely as you browse. Autofill them and log in instantly to your favorite websites.
+    
+    Store and manage your passwords securely as you browse the internet. With over 8 million users worldwide, Dashlane is the best password manager for simple, safe logins.
+
+    Dashlane's browser extension integrates seamlessly into your browsing experience. As you use and create passwords Dashlane saves them into a secure vault that only you can access. Dashlane then logs you in automatically to your saved accounts, ensuring you'll never forget another password.
+
+    “Dashlane is life-changingly great. And free. Get it.” - David Pogue, The New York Times
+
+    ##Dashlane Extension Features:#
+
+    ###SECURE PASSWORD MANAGER#
+    * Save and organize all of your passwords in one safe place
+    * Automatically log into websites in seconds
+    * Have unique, secure passwords for each of your accounts
+    * No need to remember, write down, or fill in your passwords
+
+    ###WE TAKE YOUR PASSWORD SECURITY SERIOUSLY#
+    * Dashlane protects your passwords with the industry’s strongest security encryption
+    * Choose your method for data storage: local-only or synced and backed up to the cloud
+
+    ###AWARD-WINNING PASSWORD MANAGER#
+    PC Mag “Editors’ Choice Award”
+    Webby Award “People’s Voice Best Mobile Services and Utilities App”
+    Kiplinger's "Best Identity Theft Prevention Tools”
+    Inc.com’s “Best for Passwords and Checkouts”
+    Techlicious "The Best Security Apps”
+    And many more…
+
+    ###FREE FOR LIFE ON A SINGLE BROWSER#
+
+    You can always use Dashlane for free. You can get even more with Premium.
+
+    Dashlane is free to download and manage passwords on a single web browser. Dashlane Premium gives you ultimate password convenience and security, with:
+    * Instant sync across the Dashlane Extension in all of your browsers to always keep passwords up to date, no matter where you are
+    * Use of Dashlane’s suite of apps across all of your devices, with expanded features such as our Digital Wallet and Secure Note storage
+    * Priority user support
+
+    For more information on Dashlane, see our Privacy Policy (https://www.dashlane.com/privacy) and Terms of Service (https://www.dashlane.com/terms)
+    </description>
+    <dependencies>
+      <dependency id="googlechrome" />
+    </dependencies>
+  </metadata>
+</package>
