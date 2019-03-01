@@ -36,40 +36,40 @@ Else {
     Write-Output "Creating PSDrive 'HKCR' (HKEY_CLASSES_ROOT). This will be used for the duration of the script as it is necessary for the removal and modification of specific registry keys."
     New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
     Start-Sleep 1
-    # Write-Output "Uninstalling bloatware, please wait."
-    # DebloatAll
-    # Write-Output "Bloatware removed."
-    # Start-Sleep 1
-    # Write-Output "Removing specific registry keys."
-    # Remove-Keys
-    # Write-Output "Leftover bloatware registry keys removed."
-    # Start-Sleep 1
-    # Write-Output "Checking to see if any Whitelisted Apps were removed, and if so re-adding them."
-    # Start-Sleep 1
-    # FixWhitelistedApps
-    # Start-Sleep 1
-    # Write-Output "Disabling Cortana from search, disabling feedback to Microsoft, and disabling scheduled tasks that are considered to be telemetry or unnecessary."
-    # Protect-Privacy
-    # Start-Sleep 1
-    # DisableCortana
-    # Write-Output "Cortana disabled and removed from search, feedback to Microsoft has been disabled, and scheduled tasks are disabled."
-    # Start-Sleep 1
-    # Write-Output "Stopping and disabling Diagnostics Tracking Service"
-    # DisableDiagTrack
-    # Write-Output "Diagnostics Tracking Service disabled"
-    # Start-Sleep 1
-    # Write-Output "Disabling WAP push service"
-    # Start-Sleep 1
-    # DisableWAPPush
-    # Write-Output "Re-enabling DMWAppushservice if it was disabled"
-    # CheckDMWService
-    # Start-Sleep 1
-    # Stop-EdgePDF
-    # Write-Output "Edge will no longer take over as the default PDF viewer."
-    # UninstallOneDrive
-    # Write-Output "OneDrive is now removed from the computer."
-    # UnpinStart
-    # Write-Output "Start Apps unpined."
+    Write-Output "Uninstalling bloatware, please wait."
+    DebloatAll
+    Write-Output "Bloatware removed."
+    Start-Sleep 1
+    Write-Output "Removing specific registry keys."
+    Remove-Keys
+    Write-Output "Leftover bloatware registry keys removed."
+    Start-Sleep 1
+    Write-Output "Checking to see if any Whitelisted Apps were removed, and if so re-adding them."
+    Start-Sleep 1
+    FixWhitelistedApps
+    Start-Sleep 1
+    Write-Output "Disabling Cortana from search, disabling feedback to Microsoft, and disabling scheduled tasks that are considered to be telemetry or unnecessary."
+    Protect-Privacy
+    Start-Sleep 1
+    DisableCortana
+    Write-Output "Cortana disabled and removed from search, feedback to Microsoft has been disabled, and scheduled tasks are disabled."
+    Start-Sleep 1
+    Write-Output "Stopping and disabling Diagnostics Tracking Service"
+    DisableDiagTrack
+    Write-Output "Diagnostics Tracking Service disabled"
+    Start-Sleep 1
+    Write-Output "Disabling WAP push service"
+    Start-Sleep 1
+    DisableWAPPush
+    Write-Output "Re-enabling DMWAppushservice if it was disabled"
+    CheckDMWService
+    Start-Sleep 1
+    Stop-EdgePDF
+    Write-Output "Edge will no longer take over as the default PDF viewer."
+    UninstallOneDrive
+    Write-Output "OneDrive is now removed from the computer."
+    UnpinStart
+    Write-Output "Start Apps unpined."
 
     Write-Output "Unloading the HKCR drive..."
     Remove-PSDrive HKCR 
@@ -111,9 +111,9 @@ Else {
     # https://www.zoiper.com/en/voip-softphone/download/zoiper5/for/windows
     # Vonage Business
 
-    # Write-Output "Initiating reboot."
-    # Start-Sleep 2
-    # Restart-Computer
+    Write-Output "Initiating reboot."
+    Start-Sleep 2
+    Restart-Computer
 
     Stop-Transcript
 }
