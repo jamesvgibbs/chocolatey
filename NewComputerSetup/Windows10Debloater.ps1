@@ -95,9 +95,9 @@ Else {
 
 Function DebloatAll {
     
-    [CmdletBinding()]
+    # [CmdletBinding()]
         
-    Param()
+    # Param()
     
     #Removes AppxPackages
     #Credit to /u/GavinEke for a modified version of my whitelist code
@@ -274,9 +274,9 @@ Function DebloatAll {
 
 Function Remove-Keys {
         
-    [CmdletBinding()]
+    # [CmdletBinding()]
             
-    Param()
+    # Param()
         
     #These are the registry keys that it will delete.
             
@@ -322,9 +322,9 @@ Function Remove-Keys {
             
 Function Protect-Privacy {
         
-    [CmdletBinding()]
+    # [CmdletBinding()]
         
-    Param()
+    # Param()
             
     #Disables Windows Feedback Experience
     Write-Output "Disabling Windows Feedback Experience program"
@@ -534,9 +534,9 @@ Function CheckDMWService {
 
 Function FixWhitelistedApps {
     
-    [CmdletBinding()]
+    # [CmdletBinding()]
             
-    Param()
+    # Param()
     
     If (!(Get-AppxPackage -AllUsers | Select-Object Microsoft.Paint3D, Microsoft.WindowsCalculator, Microsoft.WindowsStore, Microsoft.Windows.Photos)) {
     
