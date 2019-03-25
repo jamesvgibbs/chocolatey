@@ -1,118 +1,13 @@
 # Requires -RunAsAdministrator
-set-executionpolicy unrestricted
-# Self-elevate the script if required
-If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "You didn't run this script as an Administrator. This script will self elevate to run as an Administrator." -ForegroundColor "White"
-    Start-Sleep 1
-    # Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File", ('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs 
 
-    $arguments = "&" + $MyInvocation.MyCommand.Definition + ""
-    Start-Process "powershell.exe" -Verb RunAs -ArgumentList $arguments
-
-    Break
-}
-Else {
-    #no errors throughout
-    $ErrorActionPreference = 'silentlycontinue'
-
-    $DebloatFolder = "C:\Temp\Windows10Debloater"
-    If (Test-Path $DebloatFolder) {
-        Write-Output "$DebloatFolder exists. Skipping."
-    }
-    Else {
-        Write-Output "The folder "$DebloatFolder" doesn't exist. This folder will be used for storing logs created after the script runs. Creating now."
-        Start-Sleep 1
-        New-Item -Path "$DebloatFolder" -ItemType Directory
-        Write-Output "The folder $DebloatFolder was successfully created."
-    }
-
-    Start-Transcript -OutputDirectory "$DebloatFolder"
-
-    Write-Output "Add-Type -AssemblyName PresentationCore, PresentationFramework"
-    Add-Type -AssemblyName PresentationCore, PresentationFramework
-
-    #This will debloat Windows 10
-    #Creates a "drive" to access the HKCR (HKEY_CLASSES_ROOT)
-    Write-Output "Creating PSDrive 'HKCR' (HKEY_CLASSES_ROOT). This will be used for the duration of the script as it is necessary for the removal and modification of specific registry keys."
-    New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
-    Start-Sleep 1
-    Write-Output "Uninstalling bloatware, please wait."
-    DebloatAll
-    Write-Output "Bloatware removed."
-    Start-Sleep 1
-    Write-Output "Removing specific registry keys."
-    Remove-Keys
-    Write-Output "Leftover bloatware registry keys removed."
-    Start-Sleep 1
-    Write-Output "Checking to see if any Whitelisted Apps were removed, and if so re-adding them."
-    Start-Sleep 1
-    FixWhitelistedApps
-    Start-Sleep 1
-    Write-Output "Disabling Cortana from search, disabling feedback to Microsoft, and disabling scheduled tasks that are considered to be telemetry or unnecessary."
-    Protect-Privacy
-    Start-Sleep 1
-    DisableCortana
-    Write-Output "Cortana disabled and removed from search, feedback to Microsoft has been disabled, and scheduled tasks are disabled."
-    Start-Sleep 1
-    Write-Output "Stopping and disabling Diagnostics Tracking Service"
-    DisableDiagTrack
-    Write-Output "Diagnostics Tracking Service disabled"
-    Start-Sleep 1
-    Write-Output "Disabling WAP push service"
-    Start-Sleep 1
-    DisableWAPPush
-    Write-Output "Re-enabling DMWAppushservice if it was disabled"
-    CheckDMWService
-    Start-Sleep 1
-    Stop-EdgePDF
-    Write-Output "Edge will no longer take over as the default PDF viewer."
-    UninstallOneDrive
-    Write-Output "OneDrive is now removed from the computer."
-    UnpinStart
-    Write-Output "Start Apps unpined."
-    Start-Sleep 1
-    
-    BlockTelemetry
-    Start-Sleep 1
-
-    DisableServices
-    Start-Sleep 1
-
-    UserInterface
-    Start-Sleep 1
-
-
-    Write-Output "Unloading the HKCR drive..."
-    Remove-PSDrive HKCR 
-    Start-Sleep 1
-
-    # Write-Output "Initiating reboot."
-    # Start-Sleep 2
-    # Restart-Computer
-
-    Stop-Transcript
+If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
+{
+  # Relaunch as an elevated process:
+  Start-Process powershell.exe "-File",('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
+  exit
 }
 
 Function DebloatAll {
-    
-    # [CmdletBinding()]
-        
-    # Param()
-    
-    #Removes AppxPackages
-    #Credit to /u/GavinEke for a modified version of my whitelist code
-    [regex]$WhitelistedApps = 'Microsoft.ScreenSketch|Microsoft.Paint3D|Microsoft.WindowsCalculator|Microsoft.WindowsStore|Microsoft.Windows.Photos|CanonicalGroupLimited.UbuntuonWindows|`
-    Microsoft.XboxGameCallableUI|Microsoft.XboxGamingOverlay|Microsoft.Xbox.TCUI|Microsoft.XboxGamingOverlay|Microsoft.XboxIdentityProvider|Microsoft.MicrosoftStickyNotes|Microsoft.MSPaint|Microsoft.WindowsCamera|.NET|Framework|`
-    Microsoft.HEIFImageExtension|Microsoft.ScreenSketch|Microsoft.StorePurchaseApp|Microsoft.VP9VideoExtensions|Microsoft.WebMediaExtensions|Microsoft.WebpImageExtension|Microsoft.DesktopAppInstaller|WindSynthBerry|MIDIBerry|Slack'
-    Get-AppxPackage -AllUsers | Where-Object {$_.Name -NotMatch $WhitelistedApps} | Remove-AppxPackage
-    Get-AppxPackage | Where-Object {$_.Name -NotMatch $WhitelistedApps} | Remove-AppxPackage
-    Get-AppxProvisionedPackage -Online | Where-Object {$_.PackageName -NotMatch $WhitelistedApps} | Remove-AppxProvisionedPackage -Online
-
-
-
-    Write-Output "Elevating privileges for this process"
-    do {} until (ElevatePrivileges SeTakeOwnershipPrivilege)
-    
     Write-Output "Uninstalling default apps"
     $apps = @(
         # default Windows 10 apps
@@ -153,7 +48,6 @@ Function DebloatAll {
         "Microsoft.Xbox.TCUI"
         "Microsoft.ZuneMusic"
         "Microsoft.ZuneVideo"
-        
         
         # Threshold 2 apps
         "Microsoft.CommsPhone"
@@ -264,19 +158,17 @@ Function DebloatAll {
     Set-ItemProperty $path "SubscribedContent-338393Enabled" 0
     Set-ItemProperty $path "SystemPaneSuggestionsEnabled" 0
     
-    force-mkdir "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore"
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore"
+    New-Item -ItemType Directory -Force -Path $path
     Set-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore" "AutoDownload" 2
     
     # Prevents "Suggested Applications" returning
-    force-mkdir "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
+    $path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
+    New-Item -ItemType Directory -Force -Path $path
     Set-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableWindowsConsumerFeatures" 1
 }
 
-Function Remove-Keys {
-        
-    # [CmdletBinding()]
-            
-    # Param()
+Function RemoveRegistryKeys {
         
     #These are the registry keys that it will delete.
             
@@ -320,11 +212,27 @@ Function Remove-Keys {
     }
 }
             
-Function Protect-Privacy {
-        
-    # [CmdletBinding()]
-        
-    # Param()
+Function ProtectPrivacy {
+    Write-Output "Defuse Windows search settings"
+    Set-WindowsSearchSetting -EnableWebResultsSetting $false
+
+    Write-Output "Set general privacy options"
+    # "Let websites provide locally relevant content by accessing my language list"
+    Set-ItemProperty "HKCU:\Control Panel\International\User Profile" "HttpAcceptLanguageOptOut" 1
+    # Locaton aware printing (changes default based on connected network)
+    $path = "HKCU:\Printers\Defaults"
+    New-Item -ItemType Directory -Force -Path $path
+    Set-ItemProperty "HKCU:\Printers\Defaults" "NetID" "{00000000-0000-0000-0000-000000000000}"
+    # "Send Microsoft info about how I write to help us improve typing and writing in the future"
+    $path = "HKCU:\SOFTWARE\Microsoft\Input\TIPC"
+    New-Item -ItemType Directory -Force -Path $path
+    Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Input\TIPC" "Enabled" 0
+    # "Let apps use my advertising ID for experiencess across apps"
+    $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo"
+    New-Item -ItemType Directory -Force -Path $path
+    Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" "Enabled" 0
+    # "Turn on SmartScreen Filter to check web content"
+    Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppHost" "EnableWebContentEvaluation" 0
             
     #Disables Windows Feedback Experience
     Write-Output "Disabling Windows Feedback Experience program"
@@ -374,7 +282,12 @@ Function Protect-Privacy {
     Set-ItemProperty $registryOEM  PreInstalledAppsEnabled -Value 0 
     Set-ItemProperty $registryOEM  PreInstalledAppsEverEnabled -Value 0 
     Set-ItemProperty $registryOEM  SilentInstalledAppsEnabled -Value 0 
-    Set-ItemProperty $registryOEM  SystemPaneSuggestionsEnabled -Value 0          
+    Set-ItemProperty $registryOEM  SystemPaneSuggestionsEnabled -Value 0 
+
+    Write-Output "Disable submission of Windows Defender findings (w/ elevated privileges)"
+    TakeownRegistry("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Defender\Spynet")
+    Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows Defender\Spynet" "SpyNetReporting" 0       # write-protected even after takeown ?!
+    Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows Defender\Spynet" "SubmitSamplesConsent" 0         
     
     #Preping mixed Reality Portal for removal    
     Write-Output "Setting Mixed Reality Portal value to 0 so that you can uninstall it in Settings"
@@ -397,6 +310,15 @@ Function Protect-Privacy {
     }
     Set-ItemProperty $WifiSense2  Value -Value 0 
     Set-ItemProperty $WifiSense3  AutoConnectAllowedOEM -Value 0 
+
+    Write-Output "Do not share wifi networks"
+    $user = New-Object System.Security.Principal.NTAccount($env:UserName)
+    $sid = $user.Translate([System.Security.Principal.SecurityIdentifier]).value
+    $path = ("HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features\" + $sid)
+    New-Item -ItemType Directory -Force -Path $path
+    Set-ItemProperty ("HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features\" + $sid) "FeatureStates" 0x33c
+    Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features" "WiFiSenseCredShared" 0
+    Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features" "WiFiSenseOpen" 0
         
     #Disables live tiles
     Write-Output "Disabling live tiles"
@@ -455,13 +377,49 @@ Function Protect-Privacy {
     Stop-Service "DiagTrack"
     Set-Service "DiagTrack" -StartupType Disabled
 
-    
     Write-Output "Removing CloudStore from registry if it exists"
     $CloudStore = 'HKCUSoftware\Microsoft\Windows\CurrentVersion\CloudStore'
     If (Test-Path $CloudStore) {
         Stop-Process Explorer.exe -Force
         Remove-Item $CloudStore
         Start-Process Explorer.exe -Wait
+    }
+
+    Write-Output "Disable synchronisation of settings"
+    # These only apply if you log on using Microsoft account
+    Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\SettingSync" "BackupPolicy" 0x3c
+    Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\SettingSync" "DeviceMetadataUploaded" 0
+    Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\SettingSync" "PriorLogons" 1
+    $groups = @(
+        "Accessibility"
+        "AppSync"
+        "BrowserSettings"
+        "Credentials"
+        "DesktopTheme"
+        "Language"
+        "PackageState"
+        "Personalization"
+        "StartLayout"
+        "Windows"
+    )
+    foreach ($group in $groups) {
+        $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\SettingSync\Groups\$group"
+        New-Item -ItemType Directory -Force -Path $path
+        Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\SettingSync\Groups\$group" "Enabled" 0
+    }
+
+    Write-Output "Denying device access"
+    # Disable sharing information with unpaired devices
+    Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\LooselyCoupled" "Type" "LooselyCoupled"
+    Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\LooselyCoupled" "Value" "Deny"
+    Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\LooselyCoupled" "InitialAppValue" "Unspecified"
+    foreach ($key in (Get-ChildItem "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeviceAccess\Global")) {
+        if ($key.PSChildName -EQ "LooselyCoupled") {
+            continue
+        }
+        Set-ItemProperty ("HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\" + $key.PSChildName) "Type" "InterfaceClass"
+        Set-ItemProperty ("HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\" + $key.PSChildName) "Value" "Deny"
+        Set-ItemProperty ("HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeviceAccess\Global\" + $key.PSChildName) "InitialAppValue" "Unspecified"
     }
 }
 
@@ -519,28 +477,10 @@ Function Stop-EdgePDF {
     }
 }
 
-Function CheckDMWService {
-
-    Param([switch]$Debloat)
-  
-    If (Get-Service -Name dmwappushservice | Where-Object {$_.StartType -eq "Disabled"}) {
-        Set-Service -Name dmwappushservice -StartupType Automatic
-    }
-
-    If (Get-Service -Name dmwappushservice | Where-Object {$_.Status -eq "Stopped"}) {
-        Start-Service -Name dmwappushservice
-    } 
-}
-
 Function FixWhitelistedApps {
-    
-    # [CmdletBinding()]
-            
-    # Param()
     
     If (!(Get-AppxPackage -AllUsers | Select-Object Microsoft.Paint3D, Microsoft.WindowsCalculator, Microsoft.WindowsStore, Microsoft.Windows.Photos)) {
     
-        #Credit to abulgatz for these 4 lines of code
         Get-AppxPackage -allusers Microsoft.Paint3D | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
         Get-AppxPackage -allusers Microsoft.WindowsCalculator | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
         Get-AppxPackage -allusers Microsoft.WindowsStore | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
@@ -582,7 +522,6 @@ Function UninstallOneDrive {
 
     Write-Output "Uninstalling OneDrive"
     
-    New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
     $onedrive = "$env:SYSTEMROOT\SysWOW64\OneDriveSetup.exe"
     $ExplorerReg1 = "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}"
     $ExplorerReg2 = "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}"
@@ -887,51 +826,7 @@ Function DisableServices {
     }
 }
 
-Function ElevatePrivileges {
-    param($Privilege)
-    $Definition = @"
-    using System;
-    using System.Runtime.InteropServices;
-    public class AdjPriv {
-        [DllImport("advapi32.dll", ExactSpelling = true, SetLastError = true)]
-            internal static extern bool AdjustTokenPrivileges(IntPtr htok, bool disall, ref TokPriv1Luid newst, int len, IntPtr prev, IntPtr rele);
-        [DllImport("advapi32.dll", ExactSpelling = true, SetLastError = true)]
-            internal static extern bool OpenProcessToken(IntPtr h, int acc, ref IntPtr phtok);
-        [DllImport("advapi32.dll", SetLastError = true)]
-            internal static extern bool LookupPrivilegeValue(string host, string name, ref long pluid);
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-            internal struct TokPriv1Luid {
-                public int Count;
-                public long Luid;
-                public int Attr;
-            }
-        internal const int SE_PRIVILEGE_ENABLED = 0x00000002;
-        internal const int TOKEN_QUERY = 0x00000008;
-        internal const int TOKEN_ADJUST_PRIVILEGES = 0x00000020;
-        public static bool EnablePrivilege(long processHandle, string privilege) {
-            bool retVal;
-            TokPriv1Luid tp;
-            IntPtr hproc = new IntPtr(processHandle);
-            IntPtr htok = IntPtr.Zero;
-            retVal = OpenProcessToken(hproc, TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, ref htok);
-            tp.Count = 1;
-            tp.Luid = 0;
-            tp.Attr = SE_PRIVILEGE_ENABLED;
-            retVal = LookupPrivilegeValue(null, privilege, ref tp.Luid);
-            retVal = AdjustTokenPrivileges(htok, false, ref tp, 0, IntPtr.Zero, IntPtr.Zero);
-            return retVal;
-        }
-    }
-"@
-    $ProcessHandle = (Get-Process -id $pid).Handle
-    $type = Add-Type $definition -PassThru
-    $type[0]::EnablePrivilege($processHandle, $Privilege)
-}
-
 Function UserInterface {
-    Write-Output "Elevating priviledges for this process"
-    do {} until (ElevatePrivileges SeTakeOwnershipPrivilege)
-
     Write-Output "Apply MarkC's mouse acceleration fix"
     Set-ItemProperty "HKCU:\Control Panel\Mouse" "MouseSensitivity" "10"
     Set-ItemProperty "HKCU:\Control Panel\Mouse" "MouseSpeed" "0"
@@ -1012,8 +907,117 @@ Function UserInterface {
     # Remove 3D Objects from This PC
     Remove-Item "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}"
     Remove-Item "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}"
-
-    #echo "Disabling tile push notification"
-    #force-mkdir "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications"
-    #sp "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications" "NoTileApplicationNotification" 1
 }
+
+function TakeownRegistry($key) {
+    # TODO does not work for all root keys yet
+    switch ($key.split('\')[0]) {
+        "HKEY_CLASSES_ROOT" {
+            $reg = [Microsoft.Win32.Registry]::ClassesRoot
+            $key = $key.substring(18)
+        }
+        "HKEY_CURRENT_USER" {
+            $reg = [Microsoft.Win32.Registry]::CurrentUser
+            $key = $key.substring(18)
+        }
+        "HKEY_LOCAL_MACHINE" {
+            $reg = [Microsoft.Win32.Registry]::LocalMachine
+            $key = $key.substring(19)
+        }
+    }
+
+    # get administraor group
+    $admins = New-Object System.Security.Principal.SecurityIdentifier("S-1-5-32-544")
+    $admins = $admins.Translate([System.Security.Principal.NTAccount])
+
+    # set owner
+    $key = $reg.OpenSubKey($key, "ReadWriteSubTree", "TakeOwnership")
+    $acl = $key.GetAccessControl()
+    $acl.SetOwner($admins)
+    $key.SetAccessControl($acl)
+
+    # set FullControl
+    $acl = $key.GetAccessControl()
+    $rule = New-Object System.Security.AccessControl.RegistryAccessRule($admins, "FullControl", "Allow")
+    $acl.SetAccessRule($rule)
+    $key.SetAccessControl($acl)
+}
+
+#no errors throughout
+$ErrorActionPreference = 'silentlycontinue'
+
+$DebloatFolder = "C:\Temp\Windows10Debloater"
+If (Test-Path $DebloatFolder) {
+    Write-Output "$DebloatFolder exists. Skipping."
+}
+Else {
+    Write-Output "The folder "$DebloatFolder" doesn't exist. This folder will be used for storing logs created after the script runs. Creating now."
+    Start-Sleep 1
+    New-Item -Path "$DebloatFolder" -ItemType Directory
+    Write-Output "The folder $DebloatFolder was successfully created."
+}
+
+Start-Transcript -OutputDirectory "$DebloatFolder"
+
+Write-Output "Add-Type -AssemblyName PresentationCore, PresentationFramework"
+Add-Type -AssemblyName PresentationCore, PresentationFramework
+
+#This will debloat Windows 10
+#Creates a "drive" to access the HKCR (HKEY_CLASSES_ROOT)
+Write-Output "Creating PSDrive 'HKCR' (HKEY_CLASSES_ROOT). This will be used for the duration of the script as it is necessary for the removal and modification of specific registry keys."
+New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
+Start-Sleep 1
+Write-Output "Uninstalling bloatware, please wait."
+DebloatAll
+Write-Output "Bloatware removed."
+Start-Sleep 1
+Write-Output "Removing specific registry keys."
+RemoveRegistryKeys
+Write-Output "Leftover bloatware registry keys removed."
+Start-Sleep 1
+Write-Output "Checking to see if any Whitelisted Apps were removed, and if so re-adding them."
+Start-Sleep 1
+FixWhitelistedApps
+Start-Sleep 1
+Write-Output "Disabling Cortana from search, disabling feedback to Microsoft, and disabling scheduled tasks that are considered to be telemetry or unnecessary."
+ProtectPrivacy
+Start-Sleep 1
+DisableCortana
+Write-Output "Cortana disabled and removed from search, feedback to Microsoft has been disabled, and scheduled tasks are disabled."
+Start-Sleep 1
+Stop-EdgePDF
+Write-Output "Edge will no longer take over as the default PDF viewer."
+Start-Sleep 1
+UninstallOneDrive
+Start-Sleep 1
+Write-Output "OneDrive is now removed from the computer."
+Start-Sleep 1
+UnpinStart
+Start-Sleep 1
+Write-Output "Start Apps unpined."
+Start-Sleep 1
+Write-Output "Start Block Telemetry."
+BlockTelemetry
+Start-Sleep 1
+Write-Output "Telemetry Junk Removed."
+Start-Sleep 1
+Write-Output "Start Disable Services."
+Start-Sleep 1
+DisableServices
+Start-Sleep 1
+Write-Output "Finished Disable Services."
+Start-Sleep 1
+Write-Output "Start Correcting UI."
+UserInterface
+Start-Sleep 1
+Write-Output "Finished Correcting UI."
+Start-Sleep 1
+Write-Output "Unloading the HKCR drive..."
+Remove-PSDrive HKCR 
+Start-Sleep 1
+
+Write-Output "REBOOT MACHINE"
+# Start-Sleep 2
+# Restart-Computer
+
+Stop-Transcript
