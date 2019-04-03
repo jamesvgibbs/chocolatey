@@ -65,13 +65,13 @@ $packages = @(
 )
 
 Write-Output "Setting up Chocolatey software package manager"
-Get-PackageProvider -Name chocolatey
+Get-PackageProvider -Name chocolatey -Force
 
 Write-Output "Setting up Full Chocolatey Install"
-Install-Package -Name Chocolatey -ProviderName chocolatey
+Install-Package -Name Chocolatey -Force -ProviderName chocolatey
 $chocopath = (Get-Package chocolatey | Where-Object{$_.Name -eq "chocolatey"} | Select-Object @{N="Source";E={((($a=($_.Source -split "\\"))[0..($a.length - 2)]) -join "\"),"Tools\chocolateyInstall" -join "\"}} | Select-Object -ExpandProperty Source)
 & $chocopath "upgrade all -y"
-choco install chocolatey-core.extension 
+choco install chocolatey-core.extension --force
 
 Write-Output "Creating daily task to automatically upgrade Chocolatey packages"
 $ScheduledJob = @{
