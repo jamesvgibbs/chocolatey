@@ -15,7 +15,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
 ###                                         ###
 ###############################################
 $machineSetupUrl = 'https://raw.githubusercontent.com/jimgibbs/chocolatey/master/NewComputerSetup/Windows10Debloater.ps1'
-$expectedFilepath = (join-path $env:TEMP 'SayedHamachineSetup\machine-setup.ps1')
+$expectedFilepath = (join-path $env:TEMP 'machine-setup.ps1')
 
 if(test-path $expectedFilepath -PathType Leaf){
     Remove-Item -Path $expectedFilepath
