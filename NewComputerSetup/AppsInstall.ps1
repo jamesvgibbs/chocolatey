@@ -1,3 +1,9 @@
+$runningAsAdmin = [bool](([System.Security.Principal.WindowsIdentity]::GetCurrent()).groups -match "S-1-5-32-544")
+
+if(-not $runningAsAdmin){
+    throw 'Rerun this script as an admin'
+}
+
 
 #   Description:
 # This script will use Windows package manager to bootstrap Chocolatey and
@@ -17,7 +23,7 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 
 $ErrorActionPreference = 'silentlycontinue'
 
-$DebloatFolder = "C:\Temp\Windows10Debloater"
+$DebloatFolder = "C:\Temp\installer"
 If (Test-Path $DebloatFolder) {
     Write-Output "$DebloatFolder exists. Skipping."
 }
@@ -34,12 +40,13 @@ $packages = @(
     "googlechrome"
     "adblockpluschrome"
     "grammarly-chrome"
-    "lastpass"
-    "lastpass-chrome"
+    # "lastpass"
+    # "lastpass-chrome"
     "dashlane"
+    #"dashlane-chrome --version 1.0.0"
     "slack"
     "speccy"
-    "windows-10-update-assistant"
+    #"windows-10-update-assistant"
     "tsprint"
     #"notepadplusplus.install"
     #"peazip.install"
@@ -99,5 +106,12 @@ Remove-Item "/SysinternalsSuite.zip"
 # https://www.zoiper.com/en/voip-softphone/download/zoiper5/for/windows
 # Vonage Business
 
+
+################
+$username = "GJITAdmin"
+$password =  ConvertTo-SecureString  -AsPlainText "GJ1500" -Force
+New-LocalUser "$username" -Password $password -FullName "$username" -Description "Local admin $username"
+Add-LocalGroupMember -Group "Administrators" -Member "$username"
+################
 
 Stop-Transcript

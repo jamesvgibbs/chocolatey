@@ -1,10 +1,15 @@
 # Requires -RunAsAdministrator
 
-If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
-{
-  # Relaunch as an elevated process:
-  Start-Process powershell.exe "-File",('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
-  exit
+$runningAsAdmin = [bool](([System.Security.Principal.WindowsIdentity]::GetCurrent()).groups -match "S-1-5-32-544")
+
+if(-not $runningAsAdmin){
+    throw 'Rerun this script as an admin'
+}
+
+If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    # Relaunch as an elevated process:
+    Start-Process powershell.exe "-File", ('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
+    exit
 }
 
 Function DebloatAll {
@@ -135,9 +140,9 @@ Function DebloatAll {
     
         Get-AppxPackage -Name $app -AllUsers | Remove-AppxPackage -AllUsers
     
-        Get-AppXProvisionedPackage -Online |
-            Where-Object DisplayName -EQ $app |
-            Remove-AppxProvisionedPackage -Online
+        Get-AppxProvisionedPackage -Online |
+        Where-Object DisplayName -EQ $app |
+        Remove-AppxProvisionedPackage -Online
     }
     
     # Prevents Apps from re-installing
@@ -481,10 +486,10 @@ Function FixWhitelistedApps {
     
     If (!(Get-AppxPackage -AllUsers | Select-Object Microsoft.Paint3D, Microsoft.WindowsCalculator, Microsoft.WindowsStore, Microsoft.Windows.Photos)) {
     
-        Get-AppxPackage -allusers Microsoft.Paint3D | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
-        Get-AppxPackage -allusers Microsoft.WindowsCalculator | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
-        Get-AppxPackage -allusers Microsoft.WindowsStore | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
-        Get-AppxPackage -allusers Microsoft.Windows.Photos | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"} 
+        Get-AppxPackage -allusers Microsoft.Paint3D | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
+        Get-AppxPackage -allusers Microsoft.WindowsCalculator | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
+        Get-AppxPackage -allusers Microsoft.WindowsStore | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
+        Get-AppxPackage -allusers Microsoft.Windows.Photos | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" } 
     } 
 }
 
@@ -502,7 +507,7 @@ Function UninstallOneDrive {
         else {
             If (!(Get-Item "$env:USERPROFILE\Desktop\OneDriveBackupFiles" -ErrorAction SilentlyContinue)) {
                 Write-Output "A folder named OneDriveBackupFiles will be created and will be located on your desktop. All files from your OneDrive location will be located in that folder."
-                New-item -Path "$env:USERPROFILE\Desktop" -Name "OneDriveBackupFiles"-ItemType Directory -Force
+                New-Item -Path "$env:USERPROFILE\Desktop" -Name "OneDriveBackupFiles"-ItemType Directory -Force
                 Write-Output "Successfully created the folder 'OneDriveBackupFiles' on your desktop."
             }
         }
@@ -558,7 +563,7 @@ Function UninstallOneDrive {
     Write-Host "Enabling the Group Policy 'Prevent the usage of OneDrive for File Storage'."
     $OneDriveKey = 'HKLM:Software\Policies\Microsoft\Windows\OneDrive'
     If (!(Test-Path $OneDriveKey)) {
-        Mkdir $OneDriveKey 
+        mkdir $OneDriveKey 
     }
 
     $DisableAllOneDrive = 'HKLM:Software\Policies\Microsoft\Windows\OneDrive'
@@ -573,9 +578,9 @@ Function UnpinStart {
     (New-Object -Com Shell.Application).
     NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').
     Items() |
-        ForEach-Object { $_.Verbs() } |
-        Where-Object {$_.Name -match 'Un.*pin from Start'} |
-        ForEach-Object {$_.DoIt()}
+    ForEach-Object { $_.Verbs() } |
+    Where-Object { $_.Name -match 'Un.*pin from Start' } |
+    ForEach-Object { $_.DoIt() }
 }
 
 Function BlockTelemetry {
@@ -909,6 +914,71 @@ Function UserInterface {
     Remove-Item "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}"
 }
 
+function UninstallOtherSoftware {
+    # Get-WmiObject -Class Win32_Product -ComputerName "localhost" | Select-Object Name, Version -ErrorAction SilentlyContinue
+    Write-Output "Attempting to Uninstall McAfee"
+    $app = Get-WmiObject Win32_Product -ComputerName "localhost" | Where-Object { $_.name -eq "" }
+    $app.Uninstall()
+    
+}
+
+
+function Pin-App {
+    param(
+        [string]$appname,
+        [switch]$unpin
+    )
+    try {
+        if ($unpin.IsPresent) {
+            ((New-Object -Com Shell.Application).NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').Items() | Where-Object { $_.Name -eq $appname }).Verbs() | Where-Object { $_.Name.replace('&', '') -match 'From "Start" UnPin|Unpin from Start' } | ForEach-Object { $_.DoIt() }
+            Write-Output "App '$appname' unpinned from Start"
+        }
+        else {
+            ((New-Object -Com Shell.Application).NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').Items() | Where-Object { $_.Name -eq $appname }).Verbs() | Where-Object { $_.Name.replace('&', '') -match 'To "Start" Pin|Pin to Start' } | ForEach-Object { $_.DoIt() }
+            Write-Output  "App '$appname' pinned to Start"
+        }
+    }
+    catch {
+        Write-Error "Error Pinning/Unpinning App! (App-Name correct?)"
+    }
+}
+
+
+function unPinJunk {
+    Pin-App "Mail" -unpin
+    Pin-App "Store" -unpin
+    Pin-App "Calendar" -unpin
+    Pin-App "Microsoft Edge" -unpin
+    Pin-App "Photos" -unpin
+    Pin-App "Cortana" -unpin
+    Pin-App "Weather" -unpin
+    Pin-App "Phone Companion" -unpin
+    Pin-App "Music" -unpin
+    Pin-App "xbox" -unpin
+    Pin-App "movies & tv" -unpin
+    Pin-App "microsoft solitaire collection" -unpin
+    Pin-App "money" -unpin
+    Pin-App "get office" -unpin
+    Pin-App "onenote" -unpin
+    Pin-App "news" -unpin
+    Pin-App "Mail" -pin
+    Pin-App "Store" -pin
+    Pin-App "Calendar" -pin
+    Pin-App "Microsoft Edge" -pin
+    Pin-App "Photos" -pin
+    Pin-App "Cortana" -pin
+    Pin-App "Weather" -pin
+    Pin-App "Phone Companion" -pin
+    Pin-App "Music" -pin
+    Pin-App "xbox" -pin
+    Pin-App "movies & tv" -pin
+    Pin-App "microsoft solitaire collection" -pin
+    Pin-App "money" -pin
+    Pin-App "get office" -pin
+    Pin-App "onenote" -pin
+    Pin-App "news" -pin
+}
+
 function TakeownRegistry($key) {
     # TODO does not work for all root keys yet
     switch ($key.split('\')[0]) {
@@ -1014,6 +1084,15 @@ Write-Output "Finished Correcting UI."
 Start-Sleep 1
 Write-Output "Unloading the HKCR drive..."
 Remove-PSDrive HKCR 
+Write-Output "Finished unloading the HKCR drive."
+Start-Sleep 1
+Write-Output "Uninstall Other Software..."
+UninstallOtherSoftware 
+Write-Output "Finished Other Software."
+Start-Sleep 1
+Write-Output "Unpin stuff..."
+unPinJunk 
+Write-Output "Finished Unpinning."
 Start-Sleep 1
 
 Write-Output "REBOOT MACHINE"
