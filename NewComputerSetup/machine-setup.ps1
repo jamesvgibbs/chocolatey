@@ -71,3 +71,11 @@ if(-not (Test-Path $expectedFilepath)){
 Invoke-WebRequest -Uri $machineSetupUrl -OutFile $expectedFilepath
 
 . $expectedFilepath
+
+
+###############################################
+###                                         ###
+###           RESTART COMPUTER              ###
+###                                         ###
+###############################################
+Restart-Computer 
