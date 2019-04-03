@@ -1,5 +1,5 @@
 # to run this script execute:
-#  (new-object Net.WebClient).DownloadString("https://raw.githubusercontent.com/sayedihashimi/sayed-tools/master/run-machine-setup.ps1") | iex
+#  (new-object Net.WebClient).DownloadString("https://raw.githubusercontent.com/jimgibbs/chocolatey/master/NewComputerSetup/machine-setup.ps1") | iex
 
 $runningAsAdmin = [bool](([System.Security.Principal.WindowsIdentity]::GetCurrent()).groups -match "S-1-5-32-544")
 
