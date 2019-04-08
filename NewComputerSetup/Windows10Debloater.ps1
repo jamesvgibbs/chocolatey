@@ -959,8 +959,8 @@ function unPinJunk {
     )
 
     $items | ForEach-Object {
-        ((New-Object -Com Shell.Application).NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').Items() | Where-Object { $_.Name -eq $items }).Verbs() | Where-Object { $_.Name.replace('&', '') -match 'From "Start" UnPin|Unpin from Start' } | ForEach-Object { $_.DoIt() }
-        Write-Output "App '$items' unpinned from Start"
+        ((New-Object -Com Shell.Application).NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').Items() | Where-Object { $_.Name -eq $_ }).Verbs() | Where-Object { $_.Name.replace('&', '') -match 'From "Start" UnPin|Unpin from Start' } | ForEach-Object { $_.DoIt() }
+        Write-Output "App '$_' unpinned from Start"
     }
 }
 
@@ -1014,67 +1014,67 @@ Else {
 
 Start-Transcript -OutputDirectory "$DebloatFolder"
 
-Write-Output "Add-Type -AssemblyName PresentationCore, PresentationFramework"
-Add-Type -AssemblyName PresentationCore, PresentationFramework
+# Write-Output "Add-Type -AssemblyName PresentationCore, PresentationFramework"
+# Add-Type -AssemblyName PresentationCore, PresentationFramework
 
-#This will debloat Windows 10
-#Creates a "drive" to access the HKCR (HKEY_CLASSES_ROOT)
-Write-Output "Creating PSDrive 'HKCR' (HKEY_CLASSES_ROOT). This will be used for the duration of the script as it is necessary for the removal and modification of specific registry keys."
-New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
-Start-Sleep 1
-Write-Output "Uninstalling bloatware, please wait."
-DebloatAll
-Write-Output "Bloatware removed."
-Start-Sleep 1
-Write-Output "Removing specific registry keys."
-RemoveRegistryKeys
-Write-Output "Leftover bloatware registry keys removed."
-Start-Sleep 1
-Write-Output "Checking to see if any Whitelisted Apps were removed, and if so re-adding them."
-Start-Sleep 1
-FixWhitelistedApps
-Start-Sleep 1
-Write-Output "Disabling Cortana from search, disabling feedback to Microsoft, and disabling scheduled tasks that are considered to be telemetry or unnecessary."
-ProtectPrivacy
-Start-Sleep 1
-DisableCortana
-Write-Output "Cortana disabled and removed from search, feedback to Microsoft has been disabled, and scheduled tasks are disabled."
-Start-Sleep 1
-Stop-EdgePDF
-Write-Output "Edge will no longer take over as the default PDF viewer."
-Start-Sleep 1
-UninstallOneDrive
-Start-Sleep 1
-Write-Output "OneDrive is now removed from the computer."
-Start-Sleep 1
-UnpinStart
-Start-Sleep 1
-Write-Output "Start Apps unpined."
-Start-Sleep 1
-Write-Output "Start Block Telemetry."
-BlockTelemetry
-Start-Sleep 1
-Write-Output "Telemetry Junk Removed."
-Start-Sleep 1
-Write-Output "Start Disable Services."
-Start-Sleep 1
-DisableServices
-Start-Sleep 1
-Write-Output "Finished Disable Services."
-Start-Sleep 1
-Write-Output "Start Correcting UI."
-UserInterface
-Start-Sleep 1
-Write-Output "Finished Correcting UI."
-Start-Sleep 1
-Write-Output "Unloading the HKCR drive..."
-Remove-PSDrive HKCR 
-Write-Output "Finished unloading the HKCR drive."
-Start-Sleep 1
-Write-Output "Uninstall Other Software..."
-UninstallOtherSoftware 
-Write-Output "Finished Other Software."
-Start-Sleep 1
+# #This will debloat Windows 10
+# #Creates a "drive" to access the HKCR (HKEY_CLASSES_ROOT)
+# Write-Output "Creating PSDrive 'HKCR' (HKEY_CLASSES_ROOT). This will be used for the duration of the script as it is necessary for the removal and modification of specific registry keys."
+# New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
+# Start-Sleep 1
+# Write-Output "Uninstalling bloatware, please wait."
+# DebloatAll
+# Write-Output "Bloatware removed."
+# Start-Sleep 1
+# Write-Output "Removing specific registry keys."
+# RemoveRegistryKeys
+# Write-Output "Leftover bloatware registry keys removed."
+# Start-Sleep 1
+# Write-Output "Checking to see if any Whitelisted Apps were removed, and if so re-adding them."
+# Start-Sleep 1
+# FixWhitelistedApps
+# Start-Sleep 1
+# Write-Output "Disabling Cortana from search, disabling feedback to Microsoft, and disabling scheduled tasks that are considered to be telemetry or unnecessary."
+# ProtectPrivacy
+# Start-Sleep 1
+# DisableCortana
+# Write-Output "Cortana disabled and removed from search, feedback to Microsoft has been disabled, and scheduled tasks are disabled."
+# Start-Sleep 1
+# Stop-EdgePDF
+# Write-Output "Edge will no longer take over as the default PDF viewer."
+# Start-Sleep 1
+# UninstallOneDrive
+# Start-Sleep 1
+# Write-Output "OneDrive is now removed from the computer."
+# Start-Sleep 1
+# UnpinStart
+# Start-Sleep 1
+# Write-Output "Start Apps unpined."
+# Start-Sleep 1
+# Write-Output "Start Block Telemetry."
+# BlockTelemetry
+# Start-Sleep 1
+# Write-Output "Telemetry Junk Removed."
+# Start-Sleep 1
+# Write-Output "Start Disable Services."
+# Start-Sleep 1
+# DisableServices
+# Start-Sleep 1
+# Write-Output "Finished Disable Services."
+# Start-Sleep 1
+# Write-Output "Start Correcting UI."
+# UserInterface
+# Start-Sleep 1
+# Write-Output "Finished Correcting UI."
+# Start-Sleep 1
+# Write-Output "Unloading the HKCR drive..."
+# Remove-PSDrive HKCR 
+# Write-Output "Finished unloading the HKCR drive."
+# Start-Sleep 1
+# Write-Output "Uninstall Other Software..."
+# UninstallOtherSoftware 
+# Write-Output "Finished Other Software."
+# Start-Sleep 1
 Write-Output "Unpin stuff..."
 unPinJunk 
 Write-Output "Finished Unpinning."

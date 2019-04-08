@@ -43,7 +43,7 @@ $packages = @(
     # "lastpass"
     # "lastpass-chrome"
     "dashlane"
-    #"dashlane-chrome --version 1.0.0"
+    "dashlane-chrome"
     "slack"
     "speccy"
     #"windows-10-update-assistant"
