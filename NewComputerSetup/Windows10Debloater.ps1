@@ -1081,7 +1081,7 @@ Write-Output "Finished Unpinning."
 Start-Sleep 1
 
 Write-Output "REBOOT MACHINE"
-Start-Sleep 2
-Restart-Computer
+# Start-Sleep 2
+# Restart-Computer
 
 Stop-Transcript
