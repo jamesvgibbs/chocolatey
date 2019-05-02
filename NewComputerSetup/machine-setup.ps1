@@ -75,6 +75,14 @@ Invoke-WebRequest -Uri $machineSetupUrl -OutFile $expectedFilepath
 
 ###############################################
 ###                                         ###
+###             SET TIMEZONE                ###
+###                                         ###
+###############################################
+Set-TimeZone -Name "Eastern Standard Time"
+
+
+###############################################
+###                                         ###
 ###           RESTART COMPUTER              ###
 ###                                         ###
 ###############################################
