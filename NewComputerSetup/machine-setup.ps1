@@ -14,6 +14,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
 ###             DEBLOAT WINDOWS             ###
 ###                                         ###
 ###############################################
+#  (new-object Net.WebClient).DownloadString("https://raw.githubusercontent.com/jimgibbs/chocolatey/master/NewComputerSetup/Windows10Debloater.ps1") | iex
 $machineSetupUrl = 'https://raw.githubusercontent.com/jimgibbs/chocolatey/master/NewComputerSetup/Windows10Debloater.ps1'
 $expectedFilepath = (join-path $env:TEMP 'machine-setup.ps1')
 
@@ -35,6 +36,7 @@ Invoke-WebRequest -Uri $machineSetupUrl -OutFile $expectedFilepath
 ###             SET BACKGROUD               ###
 ###                                         ###
 ###############################################
+#  (new-object Net.WebClient).DownloadString("https://raw.githubusercontent.com/jimgibbs/chocolatey/master/NewComputerSetup/setbackground.ps1") | iex
 $machineSetupUrl = 'https://raw.githubusercontent.com/jimgibbs/chocolatey/master/NewComputerSetup/setbackground.ps1'
 $expectedFilepath = (join-path $env:TEMP 'SayedHamachineSetup\machine-setup.ps1')
 
@@ -57,6 +59,7 @@ Invoke-WebRequest -Uri $machineSetupUrl -OutFile $expectedFilepath
 ###             INSTALL APPS                ###
 ###                                         ###
 ###############################################
+#  (new-object Net.WebClient).DownloadString("https://raw.githubusercontent.com/jimgibbs/chocolatey/master/NewComputerSetup/AppsInstall.ps1") | iex
 $machineSetupUrl = 'https://raw.githubusercontent.com/jimgibbs/chocolatey/master/NewComputerSetup/AppsInstall.ps1'
 $expectedFilepath = (join-path $env:TEMP 'SayedHamachineSetup\machine-setup.ps1')
 
